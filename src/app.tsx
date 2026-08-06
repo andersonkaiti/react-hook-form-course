@@ -1,6 +1,7 @@
 import { Button } from '@components/ui/button'
 import { Input } from '@components/ui/input'
 import { ErrorMessage } from '@hookform/error-message'
+import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 
 interface IFormData {
@@ -14,16 +15,19 @@ export function App() {
     register,
     formState,
     clearErrors,
+    reset,
   } = useForm<IFormData>({
-    // Para identificar se o input está "dirty" ou não, é necessário adicionar
-    // valores-padrão, até porque undefined !== ''
     defaultValues: {
       name: '',
       age: 18,
     },
   })
 
-  const handleSubmit = submit((data) => {
+  const handleSubmit = submit(async (data) => {
+    await new Promise((resolve) => setTimeout(resolve, 2_000))
+
+    reset(data)
+
     console.log({ data })
   })
 
@@ -79,13 +83,31 @@ export function App() {
           <Button
             type="submit"
             className="flex-1"
-            disabled={!formState.isDirty}
+            disabled={
+              !formState.isDirty || formState.isSubmitting || !formState.isValid
+            }
           >
-            Salvar
+            {formState.isDirty && formState.isSubmitting && (
+              <Loader2 className="animate-spin" />
+            )}
+            {formState.isDirty && formState.isSubmitting
+              ? 'Salvando...'
+              : 'Salvar'}
           </Button>
 
-          <Button type="submit" className="flex-1" disabled={formState.isDirty}>
-            Enviar
+          <Button
+            type="submit"
+            className="flex-1"
+            disabled={
+              formState.isDirty || formState.isSubmitting || !formState.isValid
+            }
+          >
+            {!formState.isDirty && formState.isSubmitting && (
+              <Loader2 className="animate-spin" />
+            )}
+            {!formState.isDirty && formState.isSubmitting
+              ? 'Enviando...'
+              : 'Enviar'}
           </Button>
         </div>
 
