@@ -9,7 +9,19 @@ interface IFormData {
 }
 
 export function App() {
-  const { handleSubmit: submit, register, formState } = useForm<IFormData>()
+  const {
+    handleSubmit: submit,
+    register,
+    formState,
+    clearErrors,
+  } = useForm<IFormData>({
+    // Para identificar se o input está "dirty" ou não, é necessário adicionar
+    // valores-padrão, até porque undefined !== ''
+    defaultValues: {
+      name: '',
+      age: 18,
+    },
+  })
 
   const handleSubmit = submit((data) => {
     console.log({ data })
@@ -50,6 +62,7 @@ export function App() {
                 value: true,
                 message: 'Preencha a idade.',
               },
+              setValueAs: (age) => Number(age),
             })}
           />
 
@@ -62,8 +75,28 @@ export function App() {
           />
         </div>
 
-        <Button type="submit" className="mt-4">
-          Enviar
+        <div className="mt-4 flex gap-2">
+          <Button
+            type="submit"
+            className="flex-1"
+            disabled={!formState.isDirty}
+          >
+            Salvar
+          </Button>
+
+          <Button type="submit" className="flex-1" disabled={formState.isDirty}>
+            Enviar
+          </Button>
+        </div>
+
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="self-end"
+          onClick={() => clearErrors()}
+        >
+          Limpar erros
         </Button>
       </form>
     </div>
