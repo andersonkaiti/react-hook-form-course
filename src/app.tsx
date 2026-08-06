@@ -1,3 +1,4 @@
+import { ErrorMessage } from '@hookform/error-message'
 import { useForm } from 'react-hook-form'
 
 interface IFormData {
@@ -30,11 +31,13 @@ export function App() {
             })}
           />
 
-          {formState.errors.name && (
-            <small className="block text-red-400">
-              {formState.errors.name?.message}
-            </small>
-          )}
+          <ErrorMessage
+            errors={formState.errors}
+            name="name"
+            render={(error) => (
+              <small className="block text-red-400">{error.message}</small>
+            )}
+          />
         </div>
 
         <div>
@@ -57,11 +60,13 @@ export function App() {
             })}
           />
 
-          {formState.errors.age && (
-            <small className="block text-red-400">
-              {formState.errors.age.message}
-            </small>
-          )}
+          <ErrorMessage
+            errors={formState.errors}
+            name="age"
+            render={(error) => (
+              <small className="block text-red-400">{error.message}</small>
+            )}
+          />
         </div>
 
         <button type="submit">Enviar</button>
