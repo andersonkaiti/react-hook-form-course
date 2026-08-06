@@ -16,6 +16,7 @@ export function App() {
     formState,
     clearErrors,
     reset,
+    setFocus,
   } = useForm<IFormData>({
     defaultValues: {
       name: '',
@@ -98,9 +99,7 @@ export function App() {
           <Button
             type="submit"
             className="flex-1"
-            disabled={
-              formState.isDirty || formState.isSubmitting || !formState.isValid
-            }
+            disabled={formState.isDirty || formState.isSubmitting}
           >
             {!formState.isDirty && formState.isSubmitting && (
               <Loader2 className="animate-spin" />
@@ -111,15 +110,25 @@ export function App() {
           </Button>
         </div>
 
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="self-end"
-          onClick={() => clearErrors()}
-        >
-          Limpar erros
-        </Button>
+        <div className="flex gap-2 self-end">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => clearErrors()}
+          >
+            Limpar erros
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => setFocus('age')}
+          >
+            Focar na idade
+          </Button>
+        </div>
       </form>
     </div>
   )
