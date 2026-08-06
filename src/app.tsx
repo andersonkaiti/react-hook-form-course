@@ -28,6 +28,11 @@ export function App() {
                 value: 2,
                 message: 'Tem que ter no mínimo 2 dígitos',
               },
+              validate: (value) => {
+                if (value.trim().split(/\s+/).length <= 1) {
+                  return 'Digite o sobrenome'
+                }
+              },
             })}
           />
 
