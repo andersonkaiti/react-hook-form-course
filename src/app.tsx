@@ -1,14 +1,16 @@
 import { useForm } from 'react-hook-form'
 
+interface IFormData {
+  name: string
+  age: number
+}
+
 export function App() {
-  const { handleSubmit: submit, register, formState } = useForm()
+  const { handleSubmit: submit, register, formState } = useForm<IFormData>()
 
   const handleSubmit = submit((data) => {
     console.log({ data })
   })
-
-  // reativo
-  console.log(formState.errors)
 
   return (
     <div className="flex min-h-screen items-center justify-center">
