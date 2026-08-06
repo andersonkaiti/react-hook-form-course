@@ -17,6 +17,7 @@ export function App() {
     clearErrors,
     reset,
     setFocus,
+    watch,
   } = useForm<IFormData>({
     defaultValues: {
       name: '',
@@ -32,12 +33,22 @@ export function App() {
     console.log({ data })
   })
 
+  // Assiste a alguma alteração em algum campo do formulário (o RHF cria um
+  // observable por baixo dos panos e o componente escuta ele) e retorna um
+  // valor reativo.
+  // const [age, name] = watch(['age', 'name'])
+  const age = watch('age')
+
+  console.log('rendered')
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
       >
+        <h1>Idade: {age}</h1>
+
         <div>
           <Input
             placeholder="Nome"
