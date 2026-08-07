@@ -2,7 +2,7 @@ import type { IUser } from '@app-types/user'
 import { ErrorMessage } from '@hookform/error-message'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { type FieldErrors, useForm } from 'react-hook-form'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 
@@ -24,15 +24,36 @@ export function Form({ user }: IFormProps) {
     trigger,
   } = useForm<IUser>({
     values: user,
-    // Para que o values não sobrescreva os valores que o usuário digitou, é
-    // possível manter os valores "dirty":
     resetOptions: {
       keepDirtyValues: true,
     },
-    // Define quando a validação do formulário deve acontecer:
     mode: 'onSubmit',
-    // Define quando a validação feita é revalidada:
     reValidateMode: 'onChange',
+    /**
+     * A função resolver permite integrar o React Hook Form com bibliotecas
+     * externas de validação.
+     *
+     * Além disso, quando o formulário é submetido, ela é executada enviando as
+     * informações que foram preenchidas.
+     *
+     * Ela deve retornar um objeto contendo values, que é o que será injetado
+     * no data da função de handleSubmit, e um objeto errors.
+     */
+    resolver: (values) => {
+      const errors: FieldErrors<IUser> = {}
+
+      if (values.age < 18) {
+        errors.age = {
+          type: 'min',
+          message: 'Você precisa ser maior de idade.',
+        }
+      }
+
+      return {
+        values: errors ? {} : values,
+        errors: errors ? errors : {},
+      }
+    },
   })
 
   const handleSubmit = submit(async (data) => {
@@ -165,9 +186,7 @@ export function Form({ user }: IFormProps) {
           <Button
             type="submit"
             className="flex-1"
-            disabled={
-              !formState.isDirty || formState.isSubmitting || !formState.isValid
-            }
+            disabled={!formState.isDirty || formState.isSubmitting}
           >
             {formState.isDirty && formState.isSubmitting && (
               <Loader2 className="animate-spin" />
