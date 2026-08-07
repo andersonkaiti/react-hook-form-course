@@ -23,8 +23,16 @@ export function Form({ user }: IFormProps) {
     setError,
     trigger,
   } = useForm<IUser>({
-    // O defaultValues não é reativo, então é melhor usar o values nesse caso.
     values: user,
+    // Para que o values não sobrescreva os valores que o usuário digitou, é
+    // possível manter os valores "dirty":
+    resetOptions: {
+      keepDirtyValues: true,
+    },
+    // Define quando a validação do formulário deve acontecer:
+    mode: 'onSubmit',
+    // Define quando a validação feita é revalidada:
+    reValidateMode: 'onChange',
   })
 
   const handleSubmit = submit(async (data) => {

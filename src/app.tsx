@@ -23,8 +23,5 @@ export function App() {
 
   console.log('rendered')
 
-  // É possível utilizar essa estratégia com o defaultValues: utilizando a prop
-  // key para o React remontar o componente de novo, mas não é muito
-  // recomendado.
   return <Form user={user} />
 }
