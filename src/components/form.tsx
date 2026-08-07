@@ -1,10 +1,22 @@
 import type { IUser } from '@app-types/user'
 import { ErrorMessage } from '@hookform/error-message'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
-import { type FieldErrors, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+
+const userSchema = z.object({
+  name: z.string().min(1, 'Nome é obrigatório.'),
+  age: z.number().min(18, 'Você precisa ser maior de idade.'),
+  zipcode: z.string(),
+  city: z.string().optional(),
+  street: z.string().optional(),
+})
+
+type FormData = z.infer<typeof userSchema>
 
 interface IFormProps {
   user: IUser
@@ -22,38 +34,14 @@ export function Form({ user }: IFormProps) {
     watch,
     setError,
     trigger,
-  } = useForm<IUser>({
+  } = useForm<FormData>({
     values: user,
     resetOptions: {
       keepDirtyValues: true,
     },
     mode: 'onSubmit',
     reValidateMode: 'onChange',
-    /**
-     * A função resolver permite integrar o React Hook Form com bibliotecas
-     * externas de validação.
-     *
-     * Além disso, quando o formulário é submetido, ela é executada enviando as
-     * informações que foram preenchidas.
-     *
-     * Ela deve retornar um objeto contendo values, que é o que será injetado
-     * no data da função de handleSubmit, e um objeto errors.
-     */
-    resolver: (values) => {
-      const errors: FieldErrors<IUser> = {}
-
-      if (values.age < 18) {
-        errors.age = {
-          type: 'min',
-          message: 'Você precisa ser maior de idade.',
-        }
-      }
-
-      return {
-        values: errors ? {} : values,
-        errors: errors ? errors : {},
-      }
-    },
+    resolver: zodResolver(userSchema),
   })
 
   const handleSubmit = submit(async (data) => {
@@ -101,15 +89,7 @@ export function Form({ user }: IFormProps) {
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
       >
         <div>
-          <Input
-            placeholder="Nome"
-            {...register('name', {
-              required: {
-                value: true,
-                message: 'Preencha o nome.',
-              },
-            })}
-          />
+          <Input placeholder="Nome" {...register('name')} />
 
           <ErrorMessage
             errors={formState.errors}
@@ -125,11 +105,7 @@ export function Form({ user }: IFormProps) {
             placeholder="Idade"
             type="number"
             {...register('age', {
-              required: {
-                value: true,
-                message: 'Preencha a idade.',
-              },
-              setValueAs: (age) => Number(age),
+              valueAsNumber: true,
             })}
           />
 
