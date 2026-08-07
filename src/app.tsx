@@ -26,9 +26,17 @@ export function App() {
     setError,
     trigger,
   } = useForm<IFormData>({
-    defaultValues: {
-      name: '',
-      age: 18,
+    // Carregamento de dados de forma assíncrona no defaultValues:
+    defaultValues: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2_000))
+
+      return {
+        name: 'Anderson Kaiti',
+        age: 22,
+        city: 'Bauru',
+        street: 'Hoje não, sequestrador',
+        zipcode: '88888888',
+      }
     },
   })
 
@@ -70,14 +78,23 @@ export function App() {
     return () => unsubscribe()
   }, [setValue, watch, setError])
 
-  console.log('rendered')
-
   return (
     <div className="flex min-h-screen items-center justify-center">
       <form
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
       >
+        {/*
+          O isLoading do formState fornece o estado de loading da função
+          assíncrona do defaultValues
+        */}
+        {formState.isLoading && (
+          <div className="flex items-center gap-2 self-center">
+            <h1>Carregando dados...</h1>
+            <Loader2 className="size-4 animate-spin" />
+          </div>
+        )}
+
         <div>
           <Input
             placeholder="Nome"
