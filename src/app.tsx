@@ -23,6 +23,7 @@ export function App() {
     setFocus,
     setValue,
     watch,
+    setError,
   } = useForm<IFormData>({
     defaultValues: {
       name: '',
@@ -39,16 +40,26 @@ export function App() {
   })
 
   useEffect(() => {
-    // É possível inserir um argumento no watch para observar as mudanças, ou
-    // simplesmente passar uma função callback, um event listener que é
-    // executado toda vez que ocorre uma mudança nos inputs, não gera nada
-    // reativo no código e recebe como parâmetro o formData.
     const { unsubscribe } = watch(async ({ zipcode }, { name }) => {
+      if (name === 'zipcode' && zipcode && zipcode?.length < 8) {
+        setError('zipcode', {
+          type: 'minLength',
+          message: 'O CEP deve ter 8 dígitos.',
+        })
+      }
+
       if (name === 'zipcode' && zipcode && zipcode.length >= 8) {
         const response = await fetch(
           `https://viacep.com.br/ws/${zipcode}/json/`,
         )
         const data = await response.json()
+
+        if (data.erro) {
+          setError('zipcode', {
+            type: 'validate',
+            message: 'O CEP informado é inválido.',
+          })
+        }
 
         setValue('street', data.logradouro)
         setValue('city', data.localidade)
@@ -56,7 +67,7 @@ export function App() {
     })
 
     return () => unsubscribe()
-  }, [setValue, watch])
+  }, [setValue, watch, setError])
 
   console.log('rendered')
 
