@@ -7,6 +7,9 @@ import { useForm } from 'react-hook-form'
 interface IFormData {
   name: string
   age: number
+  zipcode: string
+  street: string
+  city: string
 }
 
 export function App() {
@@ -17,7 +20,8 @@ export function App() {
     clearErrors,
     reset,
     setFocus,
-    watch,
+    getValues,
+    setValue,
   } = useForm<IFormData>({
     defaultValues: {
       name: '',
@@ -33,11 +37,15 @@ export function App() {
     console.log({ data })
   })
 
-  // Assiste a alguma alteração em algum campo do formulário (o RHF cria um
-  // observable por baixo dos panos e o componente escuta ele) e retorna um
-  // valor reativo.
-  // const [age, name] = watch(['age', 'name'])
-  const age = watch('age')
+  async function handleSearchZipCode() {
+    const zipcode = getValues('zipcode')
+
+    const response = await fetch(`https://viacep.com.br/ws/${zipcode}/json/`)
+    const data = await response.json()
+
+    setValue('street', data.logradouro)
+    setValue('city', data.localidade)
+  }
 
   console.log('rendered')
 
@@ -47,8 +55,6 @@ export function App() {
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
       >
-        <h1>Idade: {age}</h1>
-
         <div>
           <Input
             placeholder="Nome"
@@ -85,6 +91,52 @@ export function App() {
           <ErrorMessage
             errors={formState.errors}
             name="age"
+            render={(error) => (
+              <small className="block text-red-400">{error.message}</small>
+            )}
+          />
+        </div>
+
+        <div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="CEP"
+              className="flex-1"
+              {...register('zipcode')}
+            />
+
+            <Button type="button" onClick={handleSearchZipCode} variant="ghost">
+              Buscar
+            </Button>
+          </div>
+
+          <ErrorMessage
+            errors={formState.errors}
+            name="zipcode"
+            render={(error) => (
+              <small className="block text-red-400">{error.message}</small>
+            )}
+          />
+        </div>
+
+        <div>
+          <Input placeholder="Rua" {...register('street')} />
+
+          <ErrorMessage
+            errors={formState.errors}
+            name="street"
+            render={(error) => (
+              <small className="block text-red-400">{error.message}</small>
+            )}
+          />
+        </div>
+
+        <div>
+          <Input placeholder="Cidade" {...register('city')} />
+
+          <ErrorMessage
+            errors={formState.errors}
+            name="city"
             render={(error) => (
               <small className="block text-red-400">{error.message}</small>
             )}
