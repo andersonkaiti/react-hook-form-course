@@ -2,6 +2,7 @@ import { Button } from '@components/ui/button'
 import { Input } from '@components/ui/input'
 import { ErrorMessage } from '@hookform/error-message'
 import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
 interface IFormData {
@@ -20,8 +21,8 @@ export function App() {
     clearErrors,
     reset,
     setFocus,
-    getValues,
     setValue,
+    watch,
   } = useForm<IFormData>({
     defaultValues: {
       name: '',
@@ -37,15 +38,25 @@ export function App() {
     console.log({ data })
   })
 
-  async function handleSearchZipCode() {
-    const zipcode = getValues('zipcode')
+  useEffect(() => {
+    // É possível inserir um argumento no watch para observar as mudanças, ou
+    // simplesmente passar uma função callback, um event listener que é
+    // executado toda vez que ocorre uma mudança nos inputs, não gera nada
+    // reativo no código e recebe como parâmetro o formData.
+    const { unsubscribe } = watch(async ({ zipcode }, { name }) => {
+      if (name === 'zipcode' && zipcode && zipcode.length >= 8) {
+        const response = await fetch(
+          `https://viacep.com.br/ws/${zipcode}/json/`,
+        )
+        const data = await response.json()
 
-    const response = await fetch(`https://viacep.com.br/ws/${zipcode}/json/`)
-    const data = await response.json()
+        setValue('street', data.logradouro)
+        setValue('city', data.localidade)
+      }
+    })
 
-    setValue('street', data.logradouro)
-    setValue('city', data.localidade)
-  }
+    return () => unsubscribe()
+  }, [setValue, watch])
 
   console.log('rendered')
 
@@ -98,17 +109,11 @@ export function App() {
         </div>
 
         <div>
-          <div className="flex gap-2">
-            <Input
-              placeholder="CEP"
-              className="flex-1"
-              {...register('zipcode')}
-            />
-
-            <Button type="button" onClick={handleSearchZipCode} variant="ghost">
-              Buscar
-            </Button>
-          </div>
+          <Input
+            placeholder="CEP"
+            className="flex-1"
+            {...register('zipcode')}
+          />
 
           <ErrorMessage
             errors={formState.errors}
