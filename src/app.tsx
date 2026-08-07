@@ -24,6 +24,7 @@ export function App() {
     setValue,
     watch,
     setError,
+    trigger,
   } = useForm<IFormData>({
     defaultValues: {
       name: '',
@@ -206,6 +207,15 @@ export function App() {
             onClick={() => setFocus('age')}
           >
             Focar na idade
+          </Button>
+
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => trigger()}
+          >
+            Forçar validação
           </Button>
         </div>
       </form>
