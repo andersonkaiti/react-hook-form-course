@@ -1,241 +1,30 @@
-import { Button } from '@components/ui/button'
-import { Input } from '@components/ui/input'
-import { ErrorMessage } from '@hookform/error-message'
-import { Loader2 } from 'lucide-react'
-import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import type { IUser } from '@app-types/user'
+import { Form } from '@components/form'
+import { useEffect, useState } from 'react'
 
-interface IFormData {
-  name: string
-  age: number
-  zipcode: string
-  street: string
-  city: string
+async function getUser() {
+  await new Promise((resolve) => setTimeout(resolve, 2_000))
+
+  return {
+    name: 'Anderson Kaiti',
+    age: 22,
+    city: 'Bauru',
+    street: 'Hoje não, sequestrador',
+    zipcode: '88888888',
+  }
 }
 
 export function App() {
-  const {
-    handleSubmit: submit,
-    register,
-    formState,
-    clearErrors,
-    reset,
-    setFocus,
-    setValue,
-    watch,
-    setError,
-    trigger,
-  } = useForm<IFormData>({
-    // Carregamento de dados de forma assíncrona no defaultValues:
-    defaultValues: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 2_000))
-
-      return {
-        name: 'Anderson Kaiti',
-        age: 22,
-        city: 'Bauru',
-        street: 'Hoje não, sequestrador',
-        zipcode: '88888888',
-      }
-    },
-  })
-
-  const handleSubmit = submit(async (data) => {
-    await new Promise((resolve) => setTimeout(resolve, 2_000))
-
-    reset(data)
-
-    console.log({ data })
-  })
+  const [user, setUser] = useState<IUser>({} as IUser)
 
   useEffect(() => {
-    const { unsubscribe } = watch(async ({ zipcode }, { name }) => {
-      if (name === 'zipcode' && zipcode && zipcode?.length < 8) {
-        setError('zipcode', {
-          type: 'minLength',
-          message: 'O CEP deve ter 8 dígitos.',
-        })
-      }
+    getUser().then((user) => setUser(user))
+  }, [])
 
-      if (name === 'zipcode' && zipcode && zipcode.length >= 8) {
-        const response = await fetch(
-          `https://viacep.com.br/ws/${zipcode}/json/`,
-        )
-        const data = await response.json()
+  console.log('rendered')
 
-        if (data.erro) {
-          setError('zipcode', {
-            type: 'validate',
-            message: 'O CEP informado é inválido.',
-          })
-        }
-
-        setValue('street', data.logradouro)
-        setValue('city', data.localidade)
-      }
-    })
-
-    return () => unsubscribe()
-  }, [setValue, watch, setError])
-
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
-      >
-        {/*
-          O isLoading do formState fornece o estado de loading da função
-          assíncrona do defaultValues
-        */}
-        {formState.isLoading && (
-          <div className="flex items-center gap-2 self-center">
-            <h1>Carregando dados...</h1>
-            <Loader2 className="size-4 animate-spin" />
-          </div>
-        )}
-
-        <div>
-          <Input
-            placeholder="Nome"
-            {...register('name', {
-              required: {
-                value: true,
-                message: 'Preencha o nome.',
-              },
-            })}
-          />
-
-          <ErrorMessage
-            errors={formState.errors}
-            name="name"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
-
-        <div>
-          <Input
-            placeholder="Idade"
-            type="number"
-            {...register('age', {
-              required: {
-                value: true,
-                message: 'Preencha a idade.',
-              },
-              setValueAs: (age) => Number(age),
-            })}
-          />
-
-          <ErrorMessage
-            errors={formState.errors}
-            name="age"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
-
-        <div>
-          <Input
-            placeholder="CEP"
-            className="flex-1"
-            {...register('zipcode')}
-          />
-
-          <ErrorMessage
-            errors={formState.errors}
-            name="zipcode"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
-
-        <div>
-          <Input placeholder="Rua" {...register('street')} />
-
-          <ErrorMessage
-            errors={formState.errors}
-            name="street"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
-
-        <div>
-          <Input placeholder="Cidade" {...register('city')} />
-
-          <ErrorMessage
-            errors={formState.errors}
-            name="city"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
-
-        <div className="mt-4 flex gap-2">
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={
-              !formState.isDirty || formState.isSubmitting || !formState.isValid
-            }
-          >
-            {formState.isDirty && formState.isSubmitting && (
-              <Loader2 className="animate-spin" />
-            )}
-            {formState.isDirty && formState.isSubmitting
-              ? 'Salvando...'
-              : 'Salvar'}
-          </Button>
-
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={formState.isDirty || formState.isSubmitting}
-          >
-            {!formState.isDirty && formState.isSubmitting && (
-              <Loader2 className="animate-spin" />
-            )}
-            {!formState.isDirty && formState.isSubmitting
-              ? 'Enviando...'
-              : 'Enviar'}
-          </Button>
-        </div>
-
-        <div className="flex gap-2 self-end">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => clearErrors()}
-          >
-            Limpar erros
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setFocus('age')}
-          >
-            Focar na idade
-          </Button>
-
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => trigger()}
-          >
-            Forçar validação
-          </Button>
-        </div>
-      </form>
-    </div>
-  )
+  // É possível utilizar essa estratégia com o defaultValues: utilizando a prop
+  // key para o React remontar o componente de novo, mas não é muito
+  // recomendado.
+  return <Form user={user} />
 }
