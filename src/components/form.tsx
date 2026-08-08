@@ -3,12 +3,14 @@ import { ErrorMessage } from '@hookform/error-message'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
+import { Switch } from './ui/switch'
 
 const userSchema = z.object({
+  blocked: z.boolean().optional(),
   name: z.string().min(1, 'Nome é obrigatório.'),
   age: z.number().min(18, 'Você precisa ser maior de idade.'),
   zipcode: z.string(),
@@ -34,6 +36,7 @@ export function Form({ user }: IFormProps) {
     watch,
     setError,
     trigger,
+    control,
   } = useForm<FormData>({
     values: user,
     resetOptions: {
@@ -88,6 +91,17 @@ export function Form({ user }: IFormProps) {
         onSubmit={handleSubmit}
         className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
       >
+        <div>
+          {/* O Controller conecta componentes sem ref ao React Hook Form. */}
+          <Controller
+            control={control}
+            name="blocked"
+            render={({ field: { onChange, value, ...rest } }) => (
+              <Switch onCheckedChange={onChange} checked={value} {...rest} />
+            )}
+          />
+        </div>
+
         <div>
           <Input placeholder="Nome" {...register('name')} />
 
