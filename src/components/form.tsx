@@ -3,11 +3,11 @@ import { ErrorMessage } from '@hookform/error-message'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { FormProvider, useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { ControlledSwitch } from './controlled-switch'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
-import { Switch } from './ui/switch'
 
 const userSchema = z.object({
   blocked: z.boolean().optional(),
@@ -25,6 +25,16 @@ interface IFormProps {
 }
 
 export function Form({ user }: IFormProps) {
+  const form = useForm<FormData>({
+    values: user,
+    resetOptions: {
+      keepDirtyValues: true,
+    },
+    mode: 'onSubmit',
+    reValidateMode: 'onChange',
+    resolver: zodResolver(userSchema),
+  })
+
   const {
     handleSubmit: submit,
     register,
@@ -36,16 +46,7 @@ export function Form({ user }: IFormProps) {
     watch,
     setError,
     trigger,
-    control,
-  } = useForm<FormData>({
-    values: user,
-    resetOptions: {
-      keepDirtyValues: true,
-    },
-    mode: 'onSubmit',
-    reValidateMode: 'onChange',
-    resolver: zodResolver(userSchema),
-  })
+  } = form
 
   const handleSubmit = submit(async (data) => {
     await new Promise((resolve) => setTimeout(resolve, 2_000))
@@ -86,149 +87,144 @@ export function Form({ user }: IFormProps) {
   }, [setValue, watch, setError])
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
-      >
-        <div>
-          {/* O Controller conecta componentes sem ref ao React Hook Form. */}
-          <Controller
-            control={control}
-            name="blocked"
-            render={({ field: { onChange, value, ...rest } }) => (
-              <Switch onCheckedChange={onChange} checked={value} {...rest} />
-            )}
-          />
-        </div>
+    <FormProvider {...form}>
+      <div className="flex min-h-screen items-center justify-center">
+        <form
+          onSubmit={handleSubmit}
+          className="mx-auto flex w-full max-w-4xl flex-col gap-2 p-4"
+        >
+          <div>
+            <ControlledSwitch<FormData> name="blocked" />
+          </div>
 
-        <div>
-          <Input placeholder="Nome" {...register('name')} />
+          <div>
+            <Input placeholder="Nome" {...register('name')} />
 
-          <ErrorMessage
-            errors={formState.errors}
-            name="name"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
+            <ErrorMessage
+              errors={formState.errors}
+              name="name"
+              render={(error) => (
+                <small className="block text-red-400">{error.message}</small>
+              )}
+            />
+          </div>
 
-        <div>
-          <Input
-            placeholder="Idade"
-            type="number"
-            {...register('age', {
-              valueAsNumber: true,
-            })}
-          />
+          <div>
+            <Input
+              placeholder="Idade"
+              type="number"
+              {...register('age', {
+                valueAsNumber: true,
+              })}
+            />
 
-          <ErrorMessage
-            errors={formState.errors}
-            name="age"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
+            <ErrorMessage
+              errors={formState.errors}
+              name="age"
+              render={(error) => (
+                <small className="block text-red-400">{error.message}</small>
+              )}
+            />
+          </div>
 
-        <div>
-          <Input
-            placeholder="CEP"
-            className="flex-1"
-            {...register('zipcode')}
-          />
+          <div>
+            <Input
+              placeholder="CEP"
+              className="flex-1"
+              {...register('zipcode')}
+            />
 
-          <ErrorMessage
-            errors={formState.errors}
-            name="zipcode"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
+            <ErrorMessage
+              errors={formState.errors}
+              name="zipcode"
+              render={(error) => (
+                <small className="block text-red-400">{error.message}</small>
+              )}
+            />
+          </div>
 
-        <div>
-          <Input placeholder="Rua" {...register('street')} />
+          <div>
+            <Input placeholder="Rua" {...register('street')} />
 
-          <ErrorMessage
-            errors={formState.errors}
-            name="street"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
+            <ErrorMessage
+              errors={formState.errors}
+              name="street"
+              render={(error) => (
+                <small className="block text-red-400">{error.message}</small>
+              )}
+            />
+          </div>
 
-        <div>
-          <Input placeholder="Cidade" {...register('city')} />
+          <div>
+            <Input placeholder="Cidade" {...register('city')} />
 
-          <ErrorMessage
-            errors={formState.errors}
-            name="city"
-            render={(error) => (
-              <small className="block text-red-400">{error.message}</small>
-            )}
-          />
-        </div>
+            <ErrorMessage
+              errors={formState.errors}
+              name="city"
+              render={(error) => (
+                <small className="block text-red-400">{error.message}</small>
+              )}
+            />
+          </div>
 
-        <div className="mt-4 flex gap-2">
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={!formState.isDirty || formState.isSubmitting}
-          >
-            {formState.isDirty && formState.isSubmitting && (
-              <Loader2 className="animate-spin" />
-            )}
-            {formState.isDirty && formState.isSubmitting
-              ? 'Salvando...'
-              : 'Salvar'}
-          </Button>
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={!formState.isDirty || formState.isSubmitting}
+            >
+              {formState.isDirty && formState.isSubmitting && (
+                <Loader2 className="animate-spin" />
+              )}
+              {formState.isDirty && formState.isSubmitting
+                ? 'Salvando...'
+                : 'Salvar'}
+            </Button>
 
-          <Button
-            type="submit"
-            className="flex-1"
-            disabled={formState.isDirty || formState.isSubmitting}
-          >
-            {!formState.isDirty && formState.isSubmitting && (
-              <Loader2 className="animate-spin" />
-            )}
-            {!formState.isDirty && formState.isSubmitting
-              ? 'Enviando...'
-              : 'Enviar'}
-          </Button>
-        </div>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={formState.isDirty || formState.isSubmitting}
+            >
+              {!formState.isDirty && formState.isSubmitting && (
+                <Loader2 className="animate-spin" />
+              )}
+              {!formState.isDirty && formState.isSubmitting
+                ? 'Enviando...'
+                : 'Enviar'}
+            </Button>
+          </div>
 
-        <div className="flex gap-2 self-end">
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => clearErrors()}
-          >
-            Limpar erros
-          </Button>
+          <div className="flex gap-2 self-end">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => clearErrors()}
+            >
+              Limpar erros
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => setFocus('age')}
-          >
-            Focar na idade
-          </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setFocus('age')}
+            >
+              Focar na idade
+            </Button>
 
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={() => trigger()}
-          >
-            Forçar validação
-          </Button>
-        </div>
-      </form>
-    </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => trigger()}
+            >
+              Forçar validação
+            </Button>
+          </div>
+        </form>
+      </div>
+    </FormProvider>
   )
 }

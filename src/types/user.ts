@@ -2,6 +2,7 @@ export interface IUser {
   name: string
   age: number
   zipcode: string
-  street: string
-  city: string
+  street?: string
+  city?: string
+  blocked?: boolean
 }
